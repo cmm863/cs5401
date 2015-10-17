@@ -1,5 +1,5 @@
 class CNF:
-  clauses = list()
+  clauses = []
   def __init__(self, cnf_file):
     
     with open(cnf_file) as f:
