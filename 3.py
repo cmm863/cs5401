@@ -5,6 +5,7 @@
 # Library
 import sys    # For command line arguments
 import json   # For config file parsing
+import random # For process
 
 # Local
 from cnf import CNF   
@@ -13,7 +14,6 @@ from sat import SAT
 # Initialize variables
 parents = list()
 children = list()
-
 
 # Get command line arguments
 if len(sys.argv) > 1:
@@ -30,8 +30,17 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 ## Uniform Random
-for i in range(config_data["num parents"]):
-  parents.append(SAT(equation.num_variables))
+for i in range(config_data["num children"]):
+  children.append(SAT(equation.num_variables))
 
-for parent in parents:
-  parent.setFitness(equation)
+for child in children:
+  child.setFitness(equation)
+
+# Parent Selection
+## Uniform Random
+for i in range(config_data["num parents"]):
+  selection = random.randint(0, len(children) - 1)
+  parents.append(children[selection])
+  children.pop(selection)
+
+  
