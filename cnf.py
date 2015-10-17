@@ -1,7 +1,7 @@
 class CNF:
   clauses = list()
-
   def __init__(self, cnf_file):
+    
     with open(cnf_file) as f:
       cnf_content = f.readlines()
 

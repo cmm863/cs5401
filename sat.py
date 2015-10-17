@@ -2,12 +2,9 @@ import random
 from cnf import CNF
 
 class SAT:
-  variables = list()
-  fitness = None
-
   def __init__(self, num_variables, variables = None):
     self.num_variables = num_variables
-
+    self.variables = list()
     if(variables is not None):
       self.variables = variables
     else:
