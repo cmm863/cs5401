@@ -43,4 +43,23 @@ for i in range(config_data["num parents"]):
   parents.append(children[selection])
   children.pop(selection)
 
-  
+# Recombination
+## Simple Arithmetic Recombination
+children = list()
+for i in range(config_data["num children"]):
+  parent_one = parent_two = None
+  recombination_variables = list()
+  while(parent_one == parent_two):
+    parent_one = parents[random.randint(0, config_data["num parents"] - 1)]
+    parent_two = parents[random.randint(0, config_data["num parents"] - 1)]
+  for j in range(equation.num_variables):
+    if(parent_one.variables[j] == parent_two.variables[j]):
+      recombination_variables.append(parent_one.variables[j])
+    else:
+      recombination_variables.append(random.randint(0, 1))
+  children.append(SAT(equation.num_variables, recombination_variables))
+
+# Survival Strategy
+## Plus
+plus_pool = children + parents
+print(len(plus_pool))
