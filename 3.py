@@ -6,6 +6,7 @@
 import sys    # For command line arguments
 import json   # For config file parsing
 import random # For process
+import math
 
 # Local
 from cnf import CNF   
@@ -22,6 +23,10 @@ def generateAverageFitness(population):
 parents = []
 children = []
 fitnesses = []
+mutation_pool = []
+recombination_pool = []
+recombination_variables = []
+mutation_variables = []
 terminate = False
 
 # Get command line arguments
@@ -45,25 +50,45 @@ for i in range(config_data["num parents"]):
 for evaluation in range(config_data["evaluations"]):
   if(terminate == True):
     break;
-  # Recombination
-  children[:] = []
-  ## Simple Arithmetic Recombination
-  for i in range(config_data["num children"]):
+  # Parent Selection
+  ## Uniform Random
+  mutation_pool[:] = []
+  recombination_pool[:] = []
+  for i in range(math.ceil(config_data["num children"]-2)):
     parent_one = parent_two = None
-    recombination_variables = list()
-
-    # Parent Selection
-    ## Uniform Random
     while(parent_one == parent_two):
       parent_one = parents[random.randint(0, config_data["num parents"] - 1)]
       parent_two = parents[random.randint(0, config_data["num parents"] - 1)]
+    recombination_pool.append([parent_one, parent_two])
 
+  for i in range(math.floor(2)):
+    mutation_pool.append(parents[random.randint(0, config_data["num parents"] - 1)])
+
+  # Recombination
+  children[:] = []
+  ## Simple Arithmetic Recombination
+  for pair in recombination_pool:
+    parent_one = pair[0]
+    parent_two = pair[1]
+    recombination_variables = []
     for j in range(equation.num_variables):
       if(parent_one.variables[j] == parent_two.variables[j]):
         recombination_variables.append(parent_one.variables[j])
       else:
         recombination_variables.append(random.randint(0, 1))
     children.append(SAT(equation.num_variables, recombination_variables))
+  # Mutation
+  for parent in mutation_pool:
+    mutation_variables = []
+    for j in range(equation.num_variables):
+      if(random.randint(0, equation.num_variables) == equation.num_variables):
+        if(parent.variables[j] == 0):
+          mutation_variables.append(1)
+        else:
+          mutation_variables.append(0)
+      else:
+        mutation_variables.append(parent.variables[j])
+    children.append(SAT(equation.num_variables, mutation_variables))
 
   # Survival Strategy
   ## Plus
@@ -74,6 +99,7 @@ for evaluation in range(config_data["evaluations"]):
   else:
     print("For survival strat, select either plus or comma")
     break;
+
 
   for individual in population:
     individual.setFitness(equation)
