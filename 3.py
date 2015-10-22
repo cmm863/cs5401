@@ -52,23 +52,14 @@ population.extend(Initialization.uniform_random(equation, config_data["pop size"
 for evaluation in range(config_data["evaluations"]):
     if terminate:
         break
+
     # Parent Selection
     ## Uniform Random
     mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
 
     # Recombination
-    children[:] = []
-    ## Simple Arithmetic Recombination
-    for pair in recombination_pool:
-        parent_one = pair[0]
-        parent_two = pair[1]
-        recombination_variables = []
-        for j in range(equation.num_variables):
-            if parent_one.variables[j] == parent_two.variables[j]:
-                recombination_variables.append(parent_one.variables[j])
-            else:
-                recombination_variables.append(random.randint(0, 1))
-        children.append(SAT(equation.num_variables, recombination_variables))
+    ## Uniform Crossover
+    children = Recombination.uniform_crossover(mating_pool, 2)
     # Mutation
     for parent in mutation_pool:
         mutation_variables = []
