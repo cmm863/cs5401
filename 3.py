@@ -12,6 +12,7 @@ import math
 from cnf import CNF
 from sat import SAT
 import initialization
+import parent_selection
 
 
 def generateAverageFitness(population):
@@ -22,9 +23,11 @@ def generateAverageFitness(population):
     return total_fitness / pop_size
 
 # Initialize variables
+population = []
 parents = []
 children = []
 fitnesses = []
+mating_pool = []
 mutation_pool = []
 recombination_pool = []
 recombination_variables = []
@@ -46,24 +49,14 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 # # Uniform Random
-parents.extend(initialization.uniform_random(equation, config_data["num parents"]))
+population.extend(initialization.uniform_random(equation, config_data["pop size"]))
 
 for evaluation in range(config_data["evaluations"]):
     if terminate:
         break
     # Parent Selection
     ## Uniform Random
-    mutation_pool[:] = []
-    recombination_pool[:] = []
-    for i in range(math.ceil(config_data["num children"] - 2)):
-        parent_one = parent_two = None
-        while parent_one == parent_two:
-            parent_one = parents[random.randint(0, config_data["num parents"] - 1)]
-            parent_two = parents[random.randint(0, config_data["num parents"] - 1)]
-        recombination_pool.append([parent_one, parent_two])
-
-    for i in range(math.floor(2)):
-        mutation_pool.append(parents[random.randint(0, config_data["num parents"] - 1)])
+    mating_pool = parent_selection.uniform_random(population, config_data["num parents"])
 
     # Recombination
     children[:] = []
