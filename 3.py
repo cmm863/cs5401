@@ -11,6 +11,7 @@ import math
 # Local
 from cnf import CNF
 from sat import SAT
+import initialization
 
 
 def generateAverageFitness(population):
@@ -45,8 +46,7 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 # # Uniform Random
-for i in range(config_data["num parents"]):
-    parents.append(SAT(equation.num_variables))
+parents.extend(initialization.uniform_random(equation, config_data["num parents"]))
 
 for evaluation in range(config_data["evaluations"]):
     if terminate:
@@ -98,7 +98,7 @@ for evaluation in range(config_data["evaluations"]):
     elif config_data["survival strat"] == "comma":
         population = children
     else:
-        print("For survival strat, select either plus or comma")
+        #print("For survival strat, select either plus or comma")
         break
 
     for individual in population:
@@ -112,7 +112,7 @@ for evaluation in range(config_data["evaluations"]):
         parents.append(population[selection])
         population.pop(selection)
     fitnesses.append(generateAverageFitness(parents))
-    print(fitnesses[-1])
+    #print(fitnesses[-1])
 
     # Termination Condition
     num_fitnesses = len(fitnesses)
