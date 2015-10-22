@@ -6,13 +6,11 @@
 import sys  # For command line arguments
 import json  # For config file parsing
 import random  # For process
-import math
 
 # Local
 from cnf import CNF
 from sat import SAT
-import initialization
-import parent_selection
+from implementations import *
 
 
 def generateAverageFitness(population):
@@ -49,14 +47,14 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 # # Uniform Random
-population.extend(initialization.uniform_random(equation, config_data["pop size"]))
+population.extend(Initialization.uniform_random(equation, config_data["pop size"]))
 
 for evaluation in range(config_data["evaluations"]):
     if terminate:
         break
     # Parent Selection
     ## Uniform Random
-    mating_pool = parent_selection.uniform_random(population, config_data["num parents"])
+    mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
 
     # Recombination
     children[:] = []
