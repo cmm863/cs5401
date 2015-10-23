@@ -5,7 +5,7 @@
 # Library
 import sys  # For command line arguments
 import json  # For config file parsing
-import random  # For process
+import math  # For crossover fraction
 
 # Local
 from cnf import CNF
@@ -22,7 +22,6 @@ def generateAverageFitness(population):
 
 # Initialize variables
 population = []
-parents = []
 children = []
 fitnesses = []
 mating_pool = []
@@ -49,6 +48,11 @@ equation = CNF(config_data["cnf file"])
 # # Uniform Random
 population.extend(Initialization.uniform_random(equation, config_data["pop size"]))
 
+# Set Fitness
+for individual in population:
+    individual.setFitness(equation)
+
+
 for evaluation in range(config_data["evaluations"]):
     if terminate:
         break
@@ -57,44 +61,35 @@ for evaluation in range(config_data["evaluations"]):
     ## Uniform Random
     mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
 
+    # Select numbers for recombination and mutation
+    num_recombined = math.ceil(config_data["num children"] / 2.) * 2
+    num_mutated = config_data["num children"] - num_recombined
+
     # Recombination
     ## Uniform Crossover
-    children = Recombination.uniform_crossover(mating_pool, 2)
+    children = Recombination.uniform_crossover(mating_pool, num_recombined)
     # Mutation
-    for parent in mutation_pool:
-        mutation_variables = []
-        for j in range(equation.num_variables):
-            if random.randint(0, equation.num_variables) == equation.num_variables:
-                if parent.variables[j] == 0:
-                    mutation_variables.append(1)
-                else:
-                    mutation_variables.append(0)
-            else:
-                mutation_variables.append(parent.variables[j])
-        children.append(SAT(equation.num_variables, mutation_variables))
+    children.extend(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
+
+    # Set Fitness
+    for child in children:
+        child.setFitness(equation)
 
     # Survival Strategy
     ## Plus
     if config_data["survival strat"] == "plus":
-        population = children + parents
+        population = children + mating_pool
     elif config_data["survival strat"] == "comma":
         population = children
     else:
-        #print("For survival strat, select either plus or comma")
+        print("For survival strat, select either plus or comma")
         break
 
-    for individual in population:
-        individual.setFitness(equation)
-
     # Survival Selection
-    parents[:] = []
     ## Uniform Random
-    for i in range(config_data["num parents"]):
-        selection = random.randint(0, len(population) - 1)
-        parents.append(population[selection])
-        population.pop(selection)
-    fitnesses.append(generateAverageFitness(parents))
-    #print(fitnesses[-1])
+    population = SurvivorSelection.truncation(population, config_data["num children"])
+    fitnesses.append(generateAverageFitness(population))
+    print(fitnesses[-1])
 
     # Termination Condition
     num_fitnesses = len(fitnesses)
