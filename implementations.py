@@ -85,3 +85,15 @@ class SurvivorSelection():
     @staticmethod
     def truncation(population, num_survivors):
         return sorted(population, key=operator.attrgetter("fitness"))[(len(population)-num_survivors):]
+
+    @staticmethod
+    def tournament(population, num_survivors, k):
+        survivors = []
+        for i in range(num_survivors):
+            tournament_group = []
+            for j in range(k):
+                tournament_group.append(population.pop(random.randint(0, len(population) - 1)))
+            tournament_group = sorted(tournament_group, key=operator.attrgetter("fitness"))
+            survivors.append(tournament_group.pop(k - 1))
+            population.extend(tournament_group)
+        return survivors

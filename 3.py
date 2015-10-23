@@ -90,8 +90,11 @@ for evaluation in range(config_data["evaluations"]):
         population = SurvivorSelection.truncation(population, config_data["num children"])
     elif config_data["survival select"] == "uni rand":
         population = SurvivorSelection.uniform_random(population, config_data["num children"])
+    elif config_data["survival select"] == "tourn":
+        population = SurvivorSelection.tournament(population, config_data["num children"], config_data["survival t size"])
     else:
         print("For survival select, select either trunc, uni rand")
+
     fitnesses.append(generateAverageFitness(population))
     print(fitnesses[-1])
 
