@@ -9,7 +9,6 @@ import math  # For crossover fraction
 
 # Local
 from cnf import CNF
-from sat import SAT
 from implementations import *
 
 
@@ -59,7 +58,7 @@ for evaluation in range(config_data["evaluations"]):
 
     # Parent Selection
     ## Uniform Random
-    mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
+    mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
 
     # Select numbers for recombination and mutation
     num_recombined = math.ceil(config_data["num children"] / 2.) * 2
@@ -87,7 +86,12 @@ for evaluation in range(config_data["evaluations"]):
 
     # Survival Selection
     ## Uniform Random
-    population = SurvivorSelection.truncation(population, config_data["num children"])
+    if config_data["survival select"] == "trunc":
+        population = SurvivorSelection.truncation(population, config_data["num children"])
+    elif config_data["survival select"] == "uni rand":
+        population = SurvivorSelection.uniform_random(population, config_data["num children"])
+    else:
+        print("For survival select, select either trunc, uni rand")
     fitnesses.append(generateAverageFitness(population))
     print(fitnesses[-1])
 

@@ -15,6 +15,16 @@ class ParentSelection():
     def uniform_random(population, num_parents):
         return [population.pop(random.randint(0, len(population) - 1)) for x in range(num_parents)]
 
+    @staticmethod
+    def tournament(population, num_parents, k):
+        parents = []
+        for i in range(num_parents):
+            tournament_group = []
+            for j in range(k):
+                tournament_group.append(population[random.randint(0, len(population) - 1)])
+            parents.append(sorted(tournament_group, key=operator.attrgetter("fitness"))[k - 1])
+        return parents
+
 
 class Recombination():
     @staticmethod
