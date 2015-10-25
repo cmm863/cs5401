@@ -16,7 +16,8 @@ class Initialization():
 class ParentSelection():
     @staticmethod
     def uniform_random(population, num_parents):
-        return [population.pop(random.randint(0, len(population) - 1)) for x in range(num_parents)]
+        pop_list = list(population)
+        return [pop_list.pop(random.randint(0, len(pop_list) - 1)) for x in range(num_parents)]
 
     @staticmethod
     def tournament(population, num_parents, k):
