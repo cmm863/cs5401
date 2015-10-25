@@ -110,7 +110,8 @@ class SurvivorSelection():
 
     @staticmethod
     def truncation(population, num_survivors):
-        return sorted(population, key=operator.attrgetter("fitness"))[(len(population)-num_survivors):]
+        pop_list = list(population)
+        return sorted(pop_list, key=operator.attrgetter("fitness"))[(len(pop_list)-num_survivors):]
 
     @staticmethod
     def tournament(population, num_survivors, k):
