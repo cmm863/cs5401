@@ -106,7 +106,8 @@ class Mutation():
 class SurvivorSelection():
     @staticmethod
     def uniform_random(population, num_survivors):
-        return [population.pop(random.randint(0, len(population) - 1)) for x in range(num_survivors)]
+        pop_list = list(population)
+        return [pop_list.pop(random.randint(0, len(pop_list) - 1)) for x in range(num_survivors)]
 
     @staticmethod
     def truncation(population, num_survivors):
