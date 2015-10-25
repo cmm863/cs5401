@@ -57,8 +57,15 @@ for evaluation in range(config_data["evaluations"]):
         break
 
     # Parent Selection
-    ## Uniform Random
-    mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
+    if config_data["parent select"] == "uni rand":
+        mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
+    elif config_data["parent select"] == "tourn":
+        mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
+    elif config_data["parent select"] == "fit prop":
+        mating_pool = ParentSelection.fitness_proportional(population, config_data["num parents"])
+    else:
+        print("For parent select, select either uni rand, tourn, or fit prop")
+        break
 
     # Select numbers for recombination and mutation
     num_recombined = math.ceil(config_data["num children"] / 2.) * 2
