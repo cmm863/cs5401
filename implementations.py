@@ -7,7 +7,10 @@ from sat import SAT
 class Initialization():
     @staticmethod
     def uniform_random(equation, pop_size):
-        return [SAT(equation.num_variables) for x in range(pop_size)]
+        pop_set = set()
+        while len(pop_set) < pop_size:
+            pop_set.add(SAT(equation.num_variables))
+        return pop_set
 
 
 class ParentSelection():
@@ -25,6 +28,26 @@ class ParentSelection():
             parents.append(sorted(tournament_group, key=operator.attrgetter("fitness"))[k - 1])
         return parents
 
+    @staticmethod
+    def fitness_proportional(population, num_parents):
+        list_pop = list(population)
+        fitness_sum = 0.0
+        prob_sum = 0.0
+        parents = set()
+        for i in population:
+            fitness_sum += i.fitness
+        for i in population:
+            prob = i.fitness / fitness_sum
+            i.probability = prob_sum + prob
+            prob_sum += prob
+        while len(parents) < num_parents:
+            selection_prob = random.random()
+            for i in range(len(list_pop)):
+                if list_pop[i].probability > selection_prob:
+                    parents.add(list_pop[i-1])
+                    break
+        return parents
+
 
 class Recombination():
     @staticmethod
@@ -32,16 +55,17 @@ class Recombination():
         if num_children % 2:
             print("Num children not even")
             return
-        children = []
-        pool_size = len(mating_pool)
-        variable_length = mating_pool[0].num_variables
-        while len(children) != num_children:
+        mating_list = list(mating_pool)
+        children = set()
+        pool_size = len(mating_list)
+        variable_length = mating_list[0].num_variables
+        while len(children) < num_children:
             parent_one = parent_two = None
             child_one = []
             child_two = []
             while parent_one == parent_two:
-                parent_one = mating_pool[random.randint(0, pool_size - 1)]
-                parent_two = mating_pool[random.randint(0, pool_size - 1)]
+                parent_one = mating_list[random.randint(0, pool_size - 1)]
+                parent_two = mating_list[random.randint(0, pool_size - 1)]
             for i in range(variable_length):
                 inheritance_factor = random.randint(0, 1)
                 if inheritance_factor == 1:
@@ -50,19 +74,20 @@ class Recombination():
                 else:
                     child_one.append(parent_two.variables[i])
                     child_two.append(parent_one.variables[i])
-            children.extend([SAT(variable_length, child_one), SAT(variable_length, child_two)])
+            children.add(SAT(variable_length, child_one))
+            children.add(SAT(variable_length, child_two))
         return children
 
 
 class Mutation():
     @staticmethod
     def bitwise(mating_pool, num_children, pm):  # pm is probability of mutation
-        children = []
+        children = set()
         pool_size = len(mating_pool)
-        variable_length = mating_pool[0].num_variables
+        mating_list = list(mating_pool)
+        variable_length = mating_list[0].num_variables
         while len(children) < num_children:
-            parent = mating_pool[random.randint(0, pool_size - 1)]
-            print(parent.variables)
+            parent = mating_list[random.randint(0, pool_size - 1)]
             child = []
             for i in range(variable_length):
                 if random.random() <= pm:
@@ -72,8 +97,7 @@ class Mutation():
                         child.append(0)
                 else:
                     child.append(parent.variables[i])
-            print(child)
-            children.extend([SAT(variable_length, child)])
+            children.add(SAT(variable_length, child))
         return children
 
 
@@ -88,12 +112,13 @@ class SurvivorSelection():
 
     @staticmethod
     def tournament(population, num_survivors, k):
-        survivors = []
+        pop_list = list(population)
+        survivors = set()
         for i in range(num_survivors):
             tournament_group = []
             for j in range(k):
-                tournament_group.append(population.pop(random.randint(0, len(population) - 1)))
+                tournament_group.append(pop_list.pop(random.randint(0, len(pop_list) - 1)))
             tournament_group = sorted(tournament_group, key=operator.attrgetter("fitness"))
-            survivors.append(tournament_group.pop(k - 1))
-            population.extend(tournament_group)
+            survivors.add(tournament_group.pop(k - 1))
+            pop_list.extend(tournament_group)
         return survivors

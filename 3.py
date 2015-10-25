@@ -20,12 +20,12 @@ def generateAverageFitness(population):
     return total_fitness / pop_size
 
 # Initialize variables
-population = []
-children = []
+population = set()
+children = set()
 fitnesses = []
-mating_pool = []
-mutation_pool = []
-recombination_pool = []
+mating_pool = set()
+mutation_pool = set()
+recombination_pool = set()
 recombination_variables = []
 mutation_variables = []
 terminate = False
@@ -45,7 +45,7 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 # # Uniform Random
-population.extend(Initialization.uniform_random(equation, config_data["pop size"]))
+population = Initialization.uniform_random(equation, config_data["pop size"])
 
 # Set Fitness
 for individual in population:
@@ -58,7 +58,7 @@ for evaluation in range(config_data["evaluations"]):
 
     # Parent Selection
     ## Uniform Random
-    mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
+    mating_pool = ParentSelection.fitness_proportional(population, config_data["num parents"])
 
     # Select numbers for recombination and mutation
     num_recombined = math.ceil(config_data["num children"] / 2.) * 2
@@ -68,7 +68,7 @@ for evaluation in range(config_data["evaluations"]):
     ## Uniform Crossover
     children = Recombination.uniform_crossover(mating_pool, num_recombined)
     # Mutation
-    children.extend(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
+    children.union(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
 
     # Set Fitness
     for child in children:
@@ -77,7 +77,7 @@ for evaluation in range(config_data["evaluations"]):
     # Survival Strategy
     ## Plus
     if config_data["survival strat"] == "plus":
-        population = children + mating_pool
+        population = children.union(mating_pool)
     elif config_data["survival strat"] == "comma":
         population = children
     else:
@@ -95,7 +95,7 @@ for evaluation in range(config_data["evaluations"]):
     else:
         print("For survival select, select either trunc, uni rand")
 
-    fitnesses.append(generateAverageFitness(population))
+    fitnesses.append(generateAverageFitness(list(population)))
     print(fitnesses[-1])
 
     # Termination Condition
