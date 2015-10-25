@@ -21,12 +21,13 @@ class ParentSelection():
 
     @staticmethod
     def tournament(population, num_parents, k):
-        parents = []
-        for i in range(num_parents):
+        parents = set()
+        pop_list = list(population)
+        while len(parents) < num_parents:
             tournament_group = []
             for j in range(k):
-                tournament_group.append(population[random.randint(0, len(population) - 1)])
-            parents.append(sorted(tournament_group, key=operator.attrgetter("fitness"))[k - 1])
+                tournament_group.append(pop_list[random.randint(0, len(pop_list) - 1)])
+            parents.add(sorted(tournament_group, key=operator.attrgetter("fitness"))[k - 1])
         return parents
 
     @staticmethod

@@ -58,7 +58,7 @@ for evaluation in range(config_data["evaluations"]):
 
     # Parent Selection
     ## Uniform Random
-    mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
+    mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
 
     # Select numbers for recombination and mutation
     num_recombined = math.ceil(config_data["num children"] / 2.) * 2
