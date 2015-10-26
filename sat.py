@@ -10,15 +10,21 @@ class SAT:
             self.variables = variables
         else:
             for i in range(self.num_variables):
-                self.variables.append(random.randint(0, 1))
+                var = random.randint(0, 2)
+                if var < 2:
+                    self.variables.append(var)
+                else:
+                    self.variables.append('x')
 
     def prettyPrint(self):
         return_string = ""
         for i in range(self.num_variables):
             if self.variables[i] == 1:
                 return_string += " " + str(i + 1)
-            else:
+            elif self.variables[i] == 0:
                 return_string += " -" + str(i + 1)
+            else: # Don't care
+                pass
         return return_string
 
     def setFitness(self, cnf_equation):
@@ -35,9 +41,13 @@ class SAT:
                 # If NOT
                 if var[0] == '-':
                     index = int(var[1:]) - 1
+                    if self.variables[index] == 'x':
+                        continue
                     clause_sum += int(not self.variables[index])
                 else:
                     index = int(var) - 1
+                    if self.variables[index] == 'x':
+                        continue
                     clause_sum += int(self.variables[index])
 
             if clause_sum > 0:

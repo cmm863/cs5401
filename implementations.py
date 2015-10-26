@@ -93,10 +93,21 @@ class Mutation():
             child = []
             for i in range(variable_length):
                 if random.random() <= pm:
-                    if not parent.variables[i]:
-                        child.append(1)
+                    if parent.variables[i] == 0:
+                        if random.randint(0, 1):
+                            child.append(1)
+                        else:
+                            child.append('x')
+                    elif parent.variables[i] == 1:
+                        if random.randint(0, 1):
+                            child.append(0)
+                        else:
+                            child.append('x')
                     else:
-                        child.append(0)
+                        if random.randint(0, 1):
+                            child.append(0)
+                        else:
+                            child.append(1)
                 else:
                     child.append(parent.variables[i])
             children.add(SAT(variable_length, child))

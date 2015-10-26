@@ -68,15 +68,14 @@ for evaluation in range(config_data["evaluations"]):
         break
 
     # Select numbers for recombination and mutation
-    num_recombined = math.ceil(config_data["num children"] / 2.) * 2
+    num_recombined = math.ceil(config_data["num children"] * config_data["co fraction"] / 2.) * 2
     num_mutated = config_data["num children"] - num_recombined
 
     # Recombination
     ## Uniform Crossover
     children = Recombination.uniform_crossover(mating_pool, num_recombined)
     # Mutation
-    children.union(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
-
+    children = children.union(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
     # Set Fitness
     for child in children:
         child.setFitness(equation)
