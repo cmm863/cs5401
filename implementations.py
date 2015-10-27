@@ -53,65 +53,51 @@ class ParentSelection():
 
 class Recombination():
     @staticmethod
-    def uniform_crossover(mating_pool, num_children):
-        if num_children % 2:
-            print("Num children not even")
-            return
+    def uniform_crossover(mating_pool):
         mating_list = list(mating_pool)
         children = set()
-        pool_size = len(mating_list)
         variable_length = mating_list[0].num_variables
-        while len(children) < num_children:
-            parent_one = parent_two = None
-            child_one = []
-            child_two = []
-            while parent_one == parent_two:
-                parent_one = mating_list[random.randint(0, pool_size - 1)]
-                parent_two = mating_list[random.randint(0, pool_size - 1)]
-            for i in range(variable_length):
-                inheritance_factor = random.randint(0, 1)
-                if inheritance_factor == 1:
-                    child_one.append(parent_one.variables[i])
-                    child_two.append(parent_two.variables[i])
-                else:
-                    child_one.append(parent_two.variables[i])
-                    child_two.append(parent_one.variables[i])
-            children.add(SAT(variable_length, child_one))
-            children.add(SAT(variable_length, child_two))
+        parent_one, parent_two = mating_list
+        child_one = []
+        child_two = []
+        for i in range(variable_length):
+            inheritance_factor = random.randint(0, 1)
+            if inheritance_factor == 1:
+                child_one.append(parent_one.variables[i])
+                child_two.append(parent_two.variables[i])
+            else:
+                child_one.append(parent_two.variables[i])
+                child_two.append(parent_one.variables[i])
+        children.add(SAT(variable_length, child_one))
+        children.add(SAT(variable_length, child_two))
         return children
 
 
 class Mutation():
     @staticmethod
-    def bitwise(mating_pool, num_children, pm):  # pm is probability of mutation
-        children = set()
-        pool_size = len(mating_pool)
-        mating_list = list(mating_pool)
-        variable_length = mating_list[0].num_variables
-        while len(children) < num_children:
-            parent = mating_list[random.randint(0, pool_size - 1)]
-            child = []
-            for i in range(variable_length):
-                if random.random() <= pm:
-                    if parent.variables[i] == 0:
-                        if random.randint(0, 1):
-                            child.append(1)
-                        else:
-                            child.append('x')
-                    elif parent.variables[i] == 1:
-                        if random.randint(0, 1):
-                            child.append(0)
-                        else:
-                            child.append('x')
+    def bitwise(parent, pm):  # pm is probability of mutation
+        variable_length = parent.num_variables
+        child = []
+        for i in range(variable_length):
+            if random.random() <= pm:
+                if parent.variables[i] == 0:
+                    if random.randint(0, 1):
+                        child.append(1)
                     else:
-                        if random.randint(0, 1):
-                            child.append(0)
-                        else:
-                            child.append(1)
+                        child.append('x')
+                elif parent.variables[i] == 1:
+                    if random.randint(0, 1):
+                        child.append(0)
+                    else:
+                        child.append('x')
                 else:
-                    child.append(parent.variables[i])
-            children.add(SAT(variable_length, child))
-        return children
+                    if random.randint(0, 1):
+                        child.append(0)
+                    else:
+                        child.append(1)
+            else:
+                child.append(parent.variables[i])
+        return SAT(variable_length, child)
 
 
 class SurvivorSelection():
@@ -137,3 +123,15 @@ class SurvivorSelection():
             survivors.add(tournament_group.pop(k - 1))
             pop_list.extend(tournament_group)
         return survivors
+
+
+class MultiObjective():
+    @staticmethod
+    def pareto_frontier(population):
+        pop_list = sorted(list(population),key=operator.attrgetter("fitness"), reverse=True)
+        front = [pop_list.pop(0)]
+        for individual in population:
+            if individual.real_var_count <= front[-1].real_var_count:
+                front.append(individual)
+
+        return front

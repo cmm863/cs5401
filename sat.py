@@ -6,6 +6,7 @@ class SAT:
     def __init__(self, num_variables, variables=None):
         self.num_variables = num_variables
         self.variables = list()
+        self.real_var_count = 0
         if variables is not None:
             self.variables = variables
         else:
@@ -15,6 +16,9 @@ class SAT:
                     self.variables.append(var)
                 else:
                     self.variables.append('x')
+        for var in self.variables:
+            if var is not 'x':
+                self.real_var_count += 1
 
     def prettyPrint(self):
         return_string = ""

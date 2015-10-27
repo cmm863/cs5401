@@ -45,37 +45,32 @@ equation = CNF(config_data["cnf file"])
 
 # Initialization
 # # Uniform Random
-population = Initialization.uniform_random(equation, config_data["pop size"])
+population = Initialization.uniform_random(equation, config_data["mu"])
 
 # Set Fitness
 for individual in population:
     individual.setFitness(equation)
 
-
 for evaluation in range(config_data["evaluations"]):
+    children.clear()
     if terminate:
         break
 
     # Parent Selection
-    if config_data["parent select"] == "uni rand":
-        mating_pool = ParentSelection.uniform_random(population, config_data["num parents"])
-    elif config_data["parent select"] == "tourn":
-        mating_pool = ParentSelection.tournament(population, config_data["num parents"], config_data["parent t size"])
-    elif config_data["parent select"] == "fit prop":
-        mating_pool = ParentSelection.fitness_proportional(population, config_data["num parents"])
-    else:
-        print("For parent select, select either uni rand, tourn, or fit prop")
-        break
+    while len(children) < config_data["lambda"]:
+        if config_data["parent select"] == "uni rand":
+            mating_pool = ParentSelection.uniform_random(population, 2)
+        elif config_data["parent select"] == "tourn":
+            mating_pool = ParentSelection.tournament(population, 2, config_data["parent t size"])
+        elif config_data["parent select"] == "fit prop":
+            mating_pool = ParentSelection.fitness_proportional(population, 2)
+        else:
+            print("For parent select, select either uni rand, tourn, or fit prop")
+            break
+        children_temp = Recombination.uniform_crossover(mating_pool)
+        for child in children_temp:
+            children.add(Mutation.bitwise(child, 1.0/equation.num_variables))
 
-    # Select numbers for recombination and mutation
-    num_recombined = math.ceil(config_data["num children"] * config_data["co fraction"] / 2.) * 2
-    num_mutated = config_data["num children"] - num_recombined
-
-    # Recombination
-    ## Uniform Crossover
-    children = Recombination.uniform_crossover(mating_pool, num_recombined)
-    # Mutation
-    children = children.union(Mutation.bitwise(mating_pool, num_mutated, 1.0/equation.num_variables))
     # Set Fitness
     for child in children:
         child.setFitness(equation)
@@ -83,7 +78,8 @@ for evaluation in range(config_data["evaluations"]):
     # Survival Strategy
     ## Plus
     if config_data["survival strat"] == "plus":
-        population = children.union(mating_pool)
+        population = children.union(population)
+
     elif config_data["survival strat"] == "comma":
         population = children
     else:
@@ -93,11 +89,11 @@ for evaluation in range(config_data["evaluations"]):
     # Survival Selection
     ## Uniform Random
     if config_data["survival select"] == "trunc":
-        population = SurvivorSelection.truncation(population, config_data["num children"])
+        population = set(SurvivorSelection.truncation(population, config_data["mu"]))
     elif config_data["survival select"] == "uni rand":
-        population = SurvivorSelection.uniform_random(population, config_data["num children"])
+        population = set(SurvivorSelection.uniform_random(population, config_data["mu"]))
     elif config_data["survival select"] == "tourn":
-        population = SurvivorSelection.tournament(population, config_data["num children"], config_data["survival t size"])
+        population = set(SurvivorSelection.tournament(population, config_data["mu"], config_data["survival t size"]))
     else:
         print("For survival select, select either trunc, uni rand")
 
