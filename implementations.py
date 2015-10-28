@@ -135,3 +135,33 @@ class MultiObjective():
                 front.append(individual)
 
         return front
+
+    @staticmethod
+    def generate_frontier(population):
+        pop_list = sorted(list(population), key=operator.attrgetter("fitness"), reverse=True)
+        front = [pop_list.pop(0)]
+        for individual in pop_list:
+            dominated = False
+            for solution in front:
+                if solution.dominates(individual):
+                    dominated = True
+                    break
+            if not dominated:
+                for solution in front:
+                    if individual.dominates(solution):
+                        front.remove(solution)
+                front.append(individual)
+
+        return set(front)
+
+    @staticmethod
+    def pareto(population):
+        temp_pop = population.copy()
+        fronts = []
+        while len(temp_pop) > 0:
+            front_set = MultiObjective.generate_frontier(temp_pop)
+            fronts.append(list(front_set))
+            temp_pop.difference_update(front_set)
+        return fronts
+
+

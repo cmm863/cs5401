@@ -58,3 +58,6 @@ class SAT:
                 current_fitness += 1
 
         self.fitness = current_fitness
+
+    def dominates(self, sat_solution):
+        return self.fitness >= sat_solution.fitness and self.real_var_count <= sat_solution.real_var_count

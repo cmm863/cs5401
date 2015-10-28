@@ -79,7 +79,6 @@ for evaluation in range(config_data["evaluations"]):
     ## Plus
     if config_data["survival strat"] == "plus":
         population = children.union(population)
-
     elif config_data["survival strat"] == "comma":
         population = children
     else:
@@ -96,10 +95,10 @@ for evaluation in range(config_data["evaluations"]):
         population = set(SurvivorSelection.tournament(population, config_data["mu"], config_data["survival t size"]))
     else:
         print("For survival select, select either trunc, uni rand")
-
+    fronts = MultiObjective.pareto(population)
     fitnesses.append(generateAverageFitness(list(population)))
     print(fitnesses[-1])
-
+    terminate = True
     # Termination Condition
     num_fitnesses = len(fitnesses)
     if num_fitnesses > config_data["n"]:
