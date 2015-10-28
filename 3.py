@@ -19,10 +19,19 @@ def generateAverageFitness(population):
         total_fitness += population[i].fitness
     return total_fitness / pop_size
 
+
+def generateAverageReal(population):
+    pop_size = len(population)
+    total_real = 0
+    for i in range(pop_size):
+        total_real += population[i].real_var_count
+    return total_real / pop_size
+
 # Initialize variables
 population = set()
 children = set()
 fitnesses = []
+real_var_counts = []
 mating_pool = set()
 mutation_pool = set()
 recombination_pool = set()
@@ -56,6 +65,7 @@ for evaluation in range(config_data["evaluations"]):
     if terminate:
         break
 
+    fronts = MultiObjective.pareto(population)
     # Parent Selection
     while len(children) < config_data["lambda"]:
         if config_data["parent select"] == "uni rand":
@@ -85,20 +95,24 @@ for evaluation in range(config_data["evaluations"]):
         print("For survival strat, select either plus or comma")
         break
 
+    fronts = MultiObjective.pareto(population)
     # Survival Selection
     ## Uniform Random
     if config_data["survival select"] == "trunc":
-        population = set(SurvivorSelection.truncation(population, config_data["mu"]))
+        population = set(SurvivorSelection.truncation(fronts, config_data["mu"]))
     elif config_data["survival select"] == "uni rand":
         population = set(SurvivorSelection.uniform_random(population, config_data["mu"]))
     elif config_data["survival select"] == "tourn":
         population = set(SurvivorSelection.tournament(population, config_data["mu"], config_data["survival t size"]))
     else:
         print("For survival select, select either trunc, uni rand")
-    fronts = MultiObjective.pareto(population)
+
+
+    real_var_counts.append(generateAverageReal(list(population)))
     fitnesses.append(generateAverageFitness(list(population)))
-    print(fitnesses[-1])
-    terminate = True
+    best_fitness = sorted(population, key=operator.attrgetter("fitness"), reverse=True)[0]
+    best_real = sorted(population, key=operator.attrgetter("real_var_count"))[0]
+    print(str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_fitness.real_var_count) + "\t" + str(best_real.fitness) + "\t" + str(best_real.real_var_count))
     # Termination Condition
     num_fitnesses = len(fitnesses)
     if num_fitnesses > config_data["n"]:

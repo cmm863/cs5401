@@ -27,7 +27,7 @@ class ParentSelection():
             tournament_group = []
             for j in range(k):
                 tournament_group.append(pop_list[random.randint(0, len(pop_list) - 1)])
-            parents.add(sorted(tournament_group, key=operator.attrgetter("fitness"))[k - 1])
+            parents.add(sorted(tournament_group, key=operator.attrgetter("height"))[0])
         return parents
 
     @staticmethod
@@ -107,9 +107,14 @@ class SurvivorSelection():
         return [pop_list.pop(random.randint(0, len(pop_list) - 1)) for x in range(num_survivors)]
 
     @staticmethod
-    def truncation(population, num_survivors):
-        pop_list = list(population)
-        return sorted(pop_list, key=operator.attrgetter("fitness"))[(len(pop_list)-num_survivors):]
+    def truncation(fronts, num_survivors):
+        pop_list = []
+        for front in fronts:
+            for individual in front:
+                pop_list.append(individual)
+                if len(pop_list) >= num_survivors:
+                    return pop_list
+        return pop_list
 
     @staticmethod
     def tournament(population, num_survivors, k):
@@ -119,8 +124,8 @@ class SurvivorSelection():
             tournament_group = []
             for j in range(k):
                 tournament_group.append(pop_list.pop(random.randint(0, len(pop_list) - 1)))
-            tournament_group = sorted(tournament_group, key=operator.attrgetter("fitness"))
-            survivors.add(tournament_group.pop(k - 1))
+            tournament_group = sorted(tournament_group, key=operator.attrgetter("height"))
+            survivors.add(tournament_group.pop(0))
             pop_list.extend(tournament_group)
         return survivors
 
@@ -162,6 +167,11 @@ class MultiObjective():
             front_set = MultiObjective.generate_frontier(temp_pop)
             fronts.append(list(front_set))
             temp_pop.difference_update(front_set)
+        height = 0
+        for front in fronts:
+            for individual in front:
+                individual.height = height
+            height += 1
         return fronts
 
 
