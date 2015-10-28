@@ -31,12 +31,14 @@ def generateAverageReal(population):
 population = set()
 children = set()
 fitnesses = []
+previous_fronts = []
 real_var_counts = []
 mating_pool = set()
 mutation_pool = set()
 recombination_pool = set()
 recombination_variables = []
 mutation_variables = []
+hall_of_fame_fronts = []
 terminate = False
 
 # Get command line arguments
@@ -49,82 +51,98 @@ else:
 with open(config_file) as temp_config:
     config_data = json.load(temp_config)
 
+
+result_log_name = config_file.replace("config/", "").replace(".cfg", "")
+result_log = open("output/" + result_log_name + ".log", 'w+')
+solution_log = open("output/" + result_log_name + ".sol", 'w+')
 # Create CNF instance
 equation = CNF(config_data["cnf file"])
-
-# Initialization
-# # Uniform Random
-population = Initialization.uniform_random(equation, config_data["mu"])
-
-# Set Fitness
-for individual in population:
-    individual.setFitness(equation)
-
-for evaluation in range(config_data["evaluations"]):
-    children.clear()
-    if terminate:
-        break
-
-    fronts = MultiObjective.pareto(population)
-    # Parent Selection
-    while len(children) < config_data["lambda"]:
-        if config_data["parent select"] == "uni rand":
-            mating_pool = ParentSelection.uniform_random(population, 2)
-        elif config_data["parent select"] == "tourn":
-            mating_pool = ParentSelection.tournament(population, 2, config_data["parent t size"])
-        elif config_data["parent select"] == "fit prop":
-            mating_pool = ParentSelection.fitness_proportional(population, 2)
-        else:
-            print("For parent select, select either uni rand, tourn, or fit prop")
-            break
-        children_temp = Recombination.uniform_crossover(mating_pool)
-        for child in children_temp:
-            children.add(Mutation.bitwise(child, 1.0/equation.num_variables))
+for run in range(config_data["runs"]):
+    result_log.write("Run " + str(run + 1) + "\n")
+    print("Run " + str(run + 1))
+    # Initialization
+    # # Uniform Random
+    population = Initialization.uniform_random(equation, config_data["mu"])
 
     # Set Fitness
-    for child in children:
-        child.setFitness(equation)
+    for individual in population:
+        individual.setFitness(equation)
 
-    # Survival Strategy
-    ## Plus
-    if config_data["survival strat"] == "plus":
-        population = children.union(population)
-    elif config_data["survival strat"] == "comma":
-        population = children
-    else:
-        print("For survival strat, select either plus or comma")
-        break
+    for evaluation in range(config_data["evaluations"]):
+        children.clear()
+        if terminate:
+            break
 
-    fronts = MultiObjective.pareto(population)
-    # Survival Selection
-    ## Uniform Random
-    if config_data["survival select"] == "trunc":
-        population = set(SurvivorSelection.truncation(fronts, config_data["mu"]))
-    elif config_data["survival select"] == "uni rand":
-        population = set(SurvivorSelection.uniform_random(population, config_data["mu"]))
-    elif config_data["survival select"] == "tourn":
-        population = set(SurvivorSelection.tournament(population, config_data["mu"], config_data["survival t size"]))
-    else:
-        print("For survival select, select either trunc, uni rand")
-
-
-    real_var_counts.append(generateAverageReal(list(population)))
-    fitnesses.append(generateAverageFitness(list(population)))
-    best_fitness = sorted(population, key=operator.attrgetter("fitness"), reverse=True)[0]
-    best_real = sorted(population, key=operator.attrgetter("real_var_count"))[0]
-    print(str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_fitness.real_var_count) + "\t" + str(best_real.fitness) + "\t" + str(best_real.real_var_count))
-    # Termination Condition
-    num_fitnesses = len(fitnesses)
-    if num_fitnesses > config_data["n"]:
-        n = config_data["n"]
-        for i in range(n):
-            if fitnesses[num_fitnesses - i - 1] != fitnesses[num_fitnesses - 1]:
+        fronts = MultiObjective.pareto(population)
+        # Parent Selection
+        while len(children) < config_data["lambda"]:
+            if config_data["parent select"] == "uni rand":
+                mating_pool = ParentSelection.uniform_random(population, 2)
+            elif config_data["parent select"] == "tourn":
+                mating_pool = ParentSelection.tournament(population, 2, config_data["parent t size"])
+            elif config_data["parent select"] == "fit prop":
+                mating_pool = ParentSelection.fitness_proportional(population, 2)
+            else:
+                print("For parent select, select either uni rand, tourn, or fit prop")
                 break
-            elif i == (n - 1):
-                terminate = True
+            children_temp = Recombination.uniform_crossover(mating_pool)
+            for child in children_temp:
+                children.add(Mutation.bitwise(child, 1.0/equation.num_variables))
 
+        # Set Fitness
+        for child in children:
+            child.setFitness(equation)
 
+        # Survival Strategy
+        ## Plus
+        if config_data["survival strat"] == "plus":
+            population = children.union(population)
+        elif config_data["survival strat"] == "comma":
+            population = children
+        else:
+            print("For survival strat, select either plus or comma")
+            break
 
+        fronts = MultiObjective.pareto(population)
+        # Survival Selection
+        ## Uniform Random
+        if config_data["survival select"] == "trunc":
+            population = set(SurvivorSelection.truncation(fronts, config_data["mu"]))
+        elif config_data["survival select"] == "uni rand":
+            population = set(SurvivorSelection.uniform_random(population, config_data["mu"]))
+        elif config_data["survival select"] == "tourn":
+            population = set(SurvivorSelection.tournament(population, config_data["mu"], config_data["survival t size"]))
+        else:
+            print("For survival select, select either trunc, uni rand")
 
+        real_var_counts.append(generateAverageReal(list(population)))
+        fitnesses.append(generateAverageFitness(list(population)))
+        best_fitness = sorted(population, key=operator.attrgetter("fitness"), reverse=True)[0]
+        best_real = sorted(population, key=operator.attrgetter("real_var_count"))[0]
+        result_log.write(str(evaluation) + "\t" + str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_real.real_var_count) + "\n")
 
+        # Termination Condition
+        previous_fronts.append(fronts[0])
+        num_fronts = len(previous_fronts)
+        for front in previous_fronts:
+            if front != fronts[0]:
+                previous_fronts.remove(front)
+        if len(previous_fronts) >= config_data["n"]:
+            hall_of_fame_fronts.append(fronts[0])
+            terminate = True
+    terminate = False
+    previous_fronts = []
+    result_log.write("\n")
 
+hof_comparisons = []
+for i in range(len(hall_of_fame_fronts)):
+    hof_comparisons.append([MultiObjective.compare_pareto_front(hall_of_fame_fronts[i], hall_of_fame_fronts), i])
+
+best_front = hall_of_fame_fronts[sorted(hof_comparisons, key=operator.itemgetter(0), reverse=True)[0][1]]
+solution_log.write("c " + config_data["cnf file"] + "\n")
+solution_log.write("c solution num: " + str(len(best_front)) + "\n\n")
+
+for solution in best_front:
+    solution_log.write("c MAXSAT value: " + str(solution.fitness) + "\n")
+    solution_log.write("c robustness: " + str(solution.real_var_count) + "\n")
+    solution_log.write("v " + solution.prettyPrint() + " 0\n\n")

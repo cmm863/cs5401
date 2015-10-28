@@ -174,4 +174,15 @@ class MultiObjective():
             height += 1
         return fronts
 
+    @staticmethod
+    def compare_pareto_front(solutions, fronts):
+        domination_count = 0
+        for front in fronts:
+            if front != solutions:
+                for solution in solutions:
+                    for individual in front:
+                        if solution.dominates(individual):
+                            domination_count += 1
+                            break
+        return domination_count / len(solutions)
 
