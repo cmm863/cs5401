@@ -73,7 +73,7 @@ for run in range(config_data["runs"]):
         if terminate:
             break
 
-        fronts = MultiObjective.pareto(population)
+        fronts = MultiObjective.pareto(population, config_data["true count"])
         # Parent Selection
         while len(children) < config_data["lambda"]:
             if config_data["parent select"] == "uni rand":
@@ -103,7 +103,7 @@ for run in range(config_data["runs"]):
             print("For survival strat, select either plus or comma")
             break
 
-        fronts = MultiObjective.pareto(population)
+        fronts = MultiObjective.pareto(population, config_data["true count"])
         # Survival Selection
         ## Uniform Random
         if config_data["survival select"] == "trunc":
@@ -119,7 +119,11 @@ for run in range(config_data["runs"]):
         fitnesses.append(generateAverageFitness(list(population)))
         best_fitness = sorted(population, key=operator.attrgetter("fitness"), reverse=True)[0]
         best_real = sorted(population, key=operator.attrgetter("real_var_count"))[0]
-        result_log.write(str(evaluation) + "\t" + str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_real.real_var_count) + "\n")
+        if config_data["true count"]:
+            best_true = sorted(population, key=operator.attrgetter("true_percent"), reverse=True)[0]
+            result_log.write(str(evaluation) + "\t" + str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_real.real_var_count) + "\t" + str(best_true.true_percent) + "\n")
+        else:
+            result_log.write(str(evaluation) + "\t" + str(fitnesses[-1]) + "\t" + str(real_var_counts[-1]) + "\t" + str(best_fitness.fitness) + "\t" + str(best_real.real_var_count) + "\n")
 
         # Termination Condition
         previous_fronts.append(fronts[0])
@@ -136,7 +140,7 @@ for run in range(config_data["runs"]):
 
 hof_comparisons = []
 for i in range(len(hall_of_fame_fronts)):
-    hof_comparisons.append([MultiObjective.compare_pareto_front(hall_of_fame_fronts[i], hall_of_fame_fronts), i])
+    hof_comparisons.append([MultiObjective.compare_pareto_front(hall_of_fame_fronts[i], hall_of_fame_fronts), i], config_data["true count"])
 
 best_front = hall_of_fame_fronts[sorted(hof_comparisons, key=operator.itemgetter(0), reverse=True)[0][1]]
 solution_log.write("c " + config_data["cnf file"] + "\n")
@@ -145,4 +149,6 @@ solution_log.write("c solution num: " + str(len(best_front)) + "\n\n")
 for solution in best_front:
     solution_log.write("c MAXSAT value: " + str(solution.fitness) + "\n")
     solution_log.write("c robustness: " + str(solution.real_var_count) + "\n")
+    if config_data["true count"]:
+        solution_log.write("c true percent: " + str(solution.true_percent) + "\n")
     solution_log.write("v " + solution.prettyPrint() + " 0\n\n")

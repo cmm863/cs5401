@@ -7,6 +7,7 @@ class SAT:
         self.num_variables = num_variables
         self.variables = list()
         self.real_var_count = 0
+        self.true_count = 0
         if variables is not None:
             self.variables = variables
         else:
@@ -18,7 +19,10 @@ class SAT:
                     self.variables.append('x')
         for var in self.variables:
             if var is not 'x':
+                if var == 1:
+                    self.true_count += 1
                 self.real_var_count += 1
+        self.true_percent = self.true_count*1.0 / self.real_var_count
 
     def prettyPrint(self):
         return_string = ""
@@ -59,5 +63,8 @@ class SAT:
 
         self.fitness = current_fitness
 
-    def dominates(self, sat_solution):
-        return self.fitness >= sat_solution.fitness and self.real_var_count <= sat_solution.real_var_count
+    def dominates(self, sat_solution, true_count):
+        if true_count:
+            return self.fitness >= sat_solution.fitness and self.real_var_count <= sat_solution.real_var_count and self.true_percent >= sat_solution.true_percent
+        else:
+            return self.fitness >= sat_solution.fitness and self.real_var_count <= sat_solution.real_var_count
