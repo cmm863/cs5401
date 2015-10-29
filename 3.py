@@ -140,7 +140,7 @@ for run in range(config_data["runs"]):
 
 hof_comparisons = []
 for i in range(len(hall_of_fame_fronts)):
-    hof_comparisons.append([MultiObjective.compare_pareto_front(hall_of_fame_fronts[i], hall_of_fame_fronts), i], config_data["true count"])
+    hof_comparisons.append([MultiObjective.compare_pareto_front(hall_of_fame_fronts[i], hall_of_fame_fronts, config_data["true count"]), i])
 
 best_front = hall_of_fame_fronts[sorted(hof_comparisons, key=operator.itemgetter(0), reverse=True)[0][1]]
 solution_log.write("c " + config_data["cnf file"] + "\n")
