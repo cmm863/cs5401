@@ -4,3 +4,4 @@ __pycache__/
 frontier.txt
 total_pop
 output/
+*.pages
